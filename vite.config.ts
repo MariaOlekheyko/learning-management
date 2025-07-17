@@ -8,7 +8,7 @@ import { resolve } from 'path'
 
 const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 const isGitHubPages = process.env.GITHUB_ACTIONS === 'true' || process.env.NODE_ENV === 'production'
-const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'learning-management'
+const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'spark-template'
 
 // https://vite.dev/config/
 export default defineConfig({

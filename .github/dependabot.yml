@@ -3,7 +3,7 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     ignore:
       - dependency-name: "@github/spark"
         reason: "This is a local workspace package"
@@ -25,16 +25,6 @@ updates:
           - "typescript*"
           - "vite*"
           - "@vitejs/*"
-
-  - package-ecosystem: "npm"
-    directory: "/packages/spark-tools"
-    schedule:
-      interval: "daily"
-    groups:
-      rollup:
-        patterns:
-          - "rollup*"
-          - "@rollup/*"
 
   - package-ecosystem: "devcontainers"
     directory: "/"
