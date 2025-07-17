@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "Building project..."
-npx vite build
+
+ls -la dist/
 
 echo "Build completed. Contents of dist directory:"
 ls -la dist/
