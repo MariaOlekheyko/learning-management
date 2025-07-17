@@ -9,8 +9,47 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import { BookOpen, Clock, Trophy, CheckCircle, Play, User, ChartBar, LinkSimple, MicrosoftOutlookLogo, GithubLogo, LinkedinLogo, Check, X, ChatCircle, Robot, PaperPlaneRight, ArrowUp, Sparkle } from '@phosphor-icons/react';
 
+// Course types
+type Course = {
+  id: number;
+  title: string;
+  description: string;
+  duration: string;
+  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  modules: {
+    id: number;
+    title: string;
+    duration: string;
+    completed: boolean;
+  }[];
+  enrolled: boolean;
+  progress: number;
+};
+
+type Message = {
+  id: number;
+  type: 'user' | 'agent';
+  content: string;
+  timestamp: string;
+};
+
+type ConnectedAccount = {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  connectedAt: string;
+  platformData: Record<string, any>;
+};
+
+type ConnectedAccounts = {
+  microsoft: ConnectedAccount | null;
+  github: ConnectedAccount | null;
+  linkedin: ConnectedAccount | null;
+};
+
 // Sample course data
-const sampleCourses = [
+const sampleCourses: Course[] = [
   {
     id: 1,
     title: 'Introduction to Web Development',
@@ -56,23 +95,23 @@ const sampleCourses = [
 ];
 
 function App() {
-  const [courses, setCourses] = useKV('learning-courses', sampleCourses);
-  const [enrolledCourses, setEnrolledCourses] = useKV('enrolled-courses', []);
-  const [connectedAccounts, setConnectedAccounts] = useKV('connected-accounts', {
+  const [courses, setCourses] = useKV<Course[]>('learning-courses', sampleCourses);
+  const [enrolledCourses, setEnrolledCourses] = useKV<Course[]>('enrolled-courses', []);
+  const [connectedAccounts, setConnectedAccounts] = useKV<ConnectedAccounts>('connected-accounts', {
     microsoft: null,
     github: null,
     linkedin: null
   });
-  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showSellerAgent, setShowSellerAgent] = useState(false);
-  const [agentMessages, setAgentMessages] = useKV('agent-messages', []);
+  const [agentMessages, setAgentMessages] = useKV<Message[]>('agent-messages', []);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isAgentTyping, setIsAgentTyping] = useState(false);
-  const [hasInitialGreeting, setHasInitialGreeting] = useKV('agent-initial-greeting', false);
+  const [hasInitialGreeting, setHasInitialGreeting] = useKV<boolean>('agent-initial-greeting', false);
 
-  const enrollInCourse = (courseId) => {
+  const enrollInCourse = (courseId: number) => {
     setCourses(currentCourses => 
       currentCourses.map(course => 
         course.id === courseId ? { ...course, enrolled: true } : course
@@ -85,7 +124,7 @@ function App() {
     }
   };
 
-  const completeModule = (courseId, moduleId) => {
+  const completeModule = (courseId: number, moduleId: number) => {
     setCourses(currentCourses =>
       currentCourses.map(course => {
         if (course.id === courseId) {
@@ -119,7 +158,7 @@ function App() {
   };
 
   // Account linking functions
-  const connectAccount = (platform, userData) => {
+  const connectAccount = (platform: keyof ConnectedAccounts, userData: any) => {
     setConnectedAccounts(current => ({
       ...current,
       [platform]: {
@@ -134,7 +173,7 @@ function App() {
     }));
   };
 
-  const disconnectAccount = (platform) => {
+  const disconnectAccount = (platform: keyof ConnectedAccounts) => {
     setConnectedAccounts(current => ({
       ...current,
       [platform]: null
@@ -142,7 +181,7 @@ function App() {
   };
 
   // Mock authentication functions (in real implementation, these would use OAuth)
-  const authenticateAccount = async (platform) => {
+  const authenticateAccount = async (platform: keyof ConnectedAccounts) => {
     // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
@@ -188,7 +227,7 @@ function App() {
     connectAccount(platform, mockUserData[platform]);
   };
 
-  const getAccountIcon = (platform) => {
+  const getAccountIcon = (platform: keyof ConnectedAccounts) => {
     switch (platform) {
       case 'microsoft': return <MicrosoftOutlookLogo className="h-5 w-5" />;
       case 'github': return <GithubLogo className="h-5 w-5" />;
@@ -197,7 +236,7 @@ function App() {
     }
   };
 
-  const getPlatformName = (platform) => {
+  const getPlatformName = (platform: keyof ConnectedAccounts) => {
     switch (platform) {
       case 'microsoft': return 'Microsoft';
       case 'github': return 'GitHub';
@@ -206,7 +245,7 @@ function App() {
     }
   };
 
-  const getPlatformColor = (platform) => {
+  const getPlatformColor = (platform: keyof ConnectedAccounts) => {
     switch (platform) {
       case 'microsoft': return 'text-blue-600';
       case 'github': return 'text-gray-800';
@@ -216,8 +255,8 @@ function App() {
   };
 
   // Seller Agent Functions
-  const sendMessageToAgent = async (message) => {
-    const userMessage = {
+  const sendMessageToAgent = async (message: string) => {
+    const userMessage: Message = {
       id: Date.now(),
       type: 'user',
       content: message,
@@ -243,7 +282,7 @@ function App() {
       userName: unifiedProfile?.name || 'there'
     };
 
-    const prompt = spark.llmPrompt`You are a helpful learning platform sales agent and advisor. Based on the user's message: "${message}" and their profile context: ${JSON.stringify(userContext)}, provide a personalized, helpful response that:
+    const prompt = window.spark.llmPrompt`You are a helpful learning platform sales agent and advisor. Based on the user's message: "${message}" and their profile context: ${JSON.stringify(userContext)}, provide a personalized, helpful response that:
 
 1. Addresses their specific question or need directly
 2. Suggests specific courses from the available catalog when appropriate
@@ -257,9 +296,9 @@ Available courses: ${JSON.stringify(courses.map(c => ({ title: c.title, descript
 Focus on being helpful, personalized, and encouraging based on their current progress and connected skills.`;
 
     try {
-      const agentResponse = await spark.llm(prompt);
+      const agentResponse = await window.spark.llm(prompt);
       
-      const agentMessage = {
+      const agentMessage: Message = {
         id: Date.now() + 1,
         type: 'agent',
         content: agentResponse,
@@ -268,7 +307,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
 
       setAgentMessages(currentMessages => [...currentMessages, agentMessage]);
     } catch (error) {
-      const errorMessage = {
+      const errorMessage: Message = {
         id: Date.now() + 1,
         type: 'agent',
         content: "I'm having trouble connecting right now. Please try again in a moment, or browse our course catalog to find something that interests you!",
@@ -294,7 +333,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
     const unifiedProfile = getUnifiedProfile();
     const userName = unifiedProfile?.name || 'there';
     
-    const welcomeMessage = {
+    const welcomeMessage: Message = {
       id: Date.now(),
       type: 'agent',
       content: `Hi ${userName}! 👋 I'm your Learning Assistant. I'm here to help you discover the perfect courses based on your skills and goals. How can I assist you today?`,
@@ -348,7 +387,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
     };
   };
 
-  const getDifficultyColor = (difficulty) => {
+  const getDifficultyColor = (difficulty: Course['difficulty']) => {
     switch (difficulty) {
       case 'Beginner': return 'bg-green-100 text-green-800';
       case 'Intermediate': return 'bg-yellow-100 text-yellow-800';
