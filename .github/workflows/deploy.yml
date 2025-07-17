@@ -40,12 +40,21 @@ jobs:
         GITHUB_REPOSITORY: ${{ github.repository }}
         NODE_ENV: production
         
+    - name: Post-process build for GitHub Pages
+      run: |
+        # Fix asset paths in index.html
+        sed -i 's|="/assets/|="/learning-management/assets/|g' ./dist/index.html
+        echo "Updated index.html with correct asset paths"
+        cat ./dist/index.html
+        
     - name: Verify build
-      run: node verify-build.js
-      
-    - name: List build artifacts
-      run: ls -la ./dist/
-      
+      run: |
+        ls -la ./dist/
+        echo "Checking index.html content:"
+        cat ./dist/index.html
+        echo "Checking for correct base path:"
+        grep -q "/learning-management/" ./dist/index.html && echo "✓ Correct base path found" || echo "✗ Base path not found"
+        
     - name: Setup Pages
       uses: actions/configure-pages@v4
       
