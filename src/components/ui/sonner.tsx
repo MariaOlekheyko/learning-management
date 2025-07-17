@@ -1,10 +1,9 @@
-import { useTheme } from "next-themes
-import { Toaster as Sonner, ToasterProps } from "sonner"
+import { Toaster as Sonner, ToasterProps } from "sonner";
+import { CSSProperties } from "react";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
-        {
       className="toaster group"
       style={
         {
@@ -12,10 +11,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
         } as CSSProperties
-
+      }
       {...props}
+    />
+  );
+};
 
-  )
-
-
-
+export { Toaster };
