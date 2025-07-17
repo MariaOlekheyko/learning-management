@@ -35,6 +35,16 @@ jobs:
       
     - name: Build project
       run: npm run build:gh
+      env:
+        GITHUB_ACTIONS: true
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        NODE_ENV: production
+        
+    - name: Verify build
+      run: node verify-build.js
+      
+    - name: List build artifacts
+      run: ls -la ./dist/
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
