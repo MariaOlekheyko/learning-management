@@ -28,8 +28,14 @@ try {
   
   // Check if assets are properly referenced
   if (indexContent.includes('src="/') && process.env.GITHUB_ACTIONS === 'true') {
-    console.error('❌ Absolute paths found in GitHub Actions build - should use relative paths');
-    process.exit(1);
+    // In GitHub Actions, check if the paths are relative to the repo base
+    const repoName = process.env.GITHUB_REPOSITORY?.split('/')[1] || 'learning-management';
+    const hasCorrectBasePath = indexContent.includes(`src="/${repoName}/`);
+    
+    if (!hasCorrectBasePath) {
+      console.error('❌ Absolute paths found in GitHub Actions build - should use repository-relative paths');
+      process.exit(1);
+    }
   }
   
   console.log('✅ Build verification passed');

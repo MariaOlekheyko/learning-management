@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clock, Award, CheckCircle, Play, User, BarChart3, LinkSimple, MicrosoftOutlookLogo, GithubLogo, LinkedinLogo, Check, X, ChatCircle, Robot, PaperPlaneRight, ArrowUp, Sparkle } from '@phosphor-icons/react';
+import { BookOpen, Clock, Trophy, CheckCircle, Play, User, ChartBar, LinkSimple, MicrosoftOutlookLogo, GithubLogo, LinkedinLogo, Check, X, ChatCircle, Robot, PaperPlaneRight, ArrowUp, Sparkle } from '@phosphor-icons/react';
 
 // Sample course data
 const sampleCourses = [
@@ -453,7 +453,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Completed</CardTitle>
-                  <Award className="h-4 w-4 text-muted-foreground" />
+                  <Trophy className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{completedCourses}</div>
@@ -463,7 +463,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Average Progress</CardTitle>
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
+                  <ChartBar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{Math.round(averageProgress)}%</div>
@@ -588,7 +588,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
                 <Card>
                   <CardContent className="pt-6">
                     <div className="text-center py-8">
-                      <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <ChartBar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                       <p className="text-muted-foreground">No progress to show yet. Enroll in a course to track your learning journey!</p>
                     </div>
                   </CardContent>
@@ -607,7 +607,7 @@ Focus on being helpful, personalized, and encouraging based on their current pro
                           </div>
                           {course.progress === 100 && (
                             <Badge variant="secondary" className="bg-accent text-accent-foreground">
-                              <Award className="h-3 w-3 mr-1" />
+                              <Trophy className="h-3 w-3 mr-1" />
                               Completed
                             </Badge>
                           )}
