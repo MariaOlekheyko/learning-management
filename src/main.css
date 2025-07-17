@@ -3,6 +3,39 @@
 @import './styles/theme.css';
 @import './index.css';
 @import "tw-animate-css";
+
+/* Custom theme override for learning platform */
+:root {
+  /* Base colors for learning platform */
+  --background: oklch(0.99 0.01 240);
+  --foreground: oklch(0.13 0.02 250);
+
+  --card: oklch(1.0 0.0 0);
+  --card-foreground: oklch(0.13 0.02 250);
+  --popover: oklch(1.0 0.0 0);
+  --popover-foreground: oklch(0.13 0.02 250);
+
+  /* Action colors for educational interface */
+  --primary: oklch(0.35 0.12 250); /* Deep blue for trust and professionalism */
+  --primary-foreground: oklch(1.0 0.0 0);
+  --secondary: oklch(0.46 0.02 250); /* Slate gray for supporting elements */
+  --secondary-foreground: oklch(1.0 0.0 0);
+  --accent: oklch(0.68 0.14 160); /* Green for success and completion */
+  --accent-foreground: oklch(0.13 0.05 160);
+  --destructive: oklch(0.55 0.20 25); /* Red for errors and warnings */
+  --destructive-foreground: oklch(1.0 0.0 0);
+
+  /* Supporting UI colors */
+  --muted: oklch(0.96 0.01 240);
+  --muted-foreground: oklch(0.46 0.02 250);
+  --border: oklch(0.90 0.01 240);
+  --input: oklch(0.90 0.01 240);
+  --ring: oklch(0.35 0.12 250);
+
+  /* Consistent border radius for modern feel */
+  --radius: 0.5rem;
+}
+
 /*
   ---break---
 */

@@ -1,38 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Learning Platform - Test</title>
+    <title>Test</title>
     <style>
-      :root {
-        --background: oklch(0.99 0.01 240);
-        --foreground: oklch(0.13 0.02 250);
-        --primary: oklch(0.35 0.12 250);
-        --primary-foreground: oklch(1.0 0.0 0);
-      }
-      
-      body {
-        font-family: Inter, sans-serif;
-        background: var(--background);
-        color: var(--foreground);
-        margin: 0;
-        padding: 20px;
-      }
-      
-      .test-button {
-        background: var(--primary);
-        color: var(--primary-foreground);
-        border: none;
-        padding: 12px 24px;
-        border-radius: 8px;
-        cursor: pointer;
-      }
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+        .test-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0052a3;
+        }
     </style>
-  </head>
-  <body>
-    <h1>Learning Platform UI Test</h1>
-    <p>This is a test page to verify the UI styling works correctly.</p>
-    <button class="test-button">Test Button</button>
-  </body>
+</head>
+<body>
+    <div class="test-card">
+        <h1>UI Test</h1>
+        <p>This is a test page to check if basic styling works.</p>
+        <button class="test-button">Test Button</button>
+    </div>
+    
+    <div class="test-card">
+        <h2>Colors Test</h2>
+        <div style="background: #0066cc; color: white; padding: 10px; margin: 5px 0;">Primary Blue</div>
+        <div style="background: #00cc66; color: white; padding: 10px; margin: 5px 0;">Success Green</div>
+        <div style="background: #cc6600; color: white; padding: 10px; margin: 5px 0;">Warning Orange</div>
+    </div>
+</body>
 </html>
