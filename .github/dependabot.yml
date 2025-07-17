@@ -4,6 +4,37 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "@github/spark"
+        reason: "This is a local workspace package"
+    groups:
+      react:
+        patterns:
+          - "react*"
+          - "@types/react*"
+      radix:
+        patterns:
+          - "@radix-ui/*"
+      tailwind:
+        patterns:
+          - "tailwind*"
+          - "@tailwindcss/*"
+      dev-tools:
+        patterns:
+          - "eslint*"
+          - "typescript*"
+          - "vite*"
+          - "@vitejs/*"
+
+  - package-ecosystem: "npm"
+    directory: "/packages/spark-tools"
+    schedule:
+      interval: "daily"
+    groups:
+      rollup:
+        patterns:
+          - "rollup*"
+          - "@rollup/*"
 
   - package-ecosystem: "devcontainers"
     directory: "/"
