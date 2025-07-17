@@ -45,6 +45,11 @@
 - **Why it matters**: Provides personalized learning overview and quick access to relevant content
 - **Success criteria**: Dashboard loads quickly and presents relevant, actionable information
 
+### AI Learning Assistant (Seller Agent)
+- **What it does**: Intelligent chat-based assistant that provides personalized course recommendations, answers questions, and guides users through their learning journey
+- **Why it matters**: Helps users discover relevant courses, overcome learning obstacles, and stay motivated through personalized guidance
+- **Success criteria**: Agent provides helpful, accurate responses and successfully guides users to appropriate courses based on their profile and goals
+
 ## Design Direction
 
 ### Visual Tone & Identity

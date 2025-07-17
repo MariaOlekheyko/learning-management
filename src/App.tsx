@@ -7,7 +7,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { BookOpen, Clock, Award, CheckCircle, Play, User, BarChart3, LinkSimple, MicrosoftOutlookLogo, GithubLogo, LinkedinLogo, Check, X } from '@phosphor-icons/react';
+import { BookOpen, Clock, Award, CheckCircle, Play, User, BarChart3, LinkSimple, MicrosoftOutlookLogo, GithubLogo, LinkedinLogo, Check, X, ChatCircle, Robot, PaperPlaneRight, ArrowUp, Sparkle } from '@phosphor-icons/react';
 
 // Sample course data
 const sampleCourses = [
@@ -66,6 +66,11 @@ function App() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeTab, setActiveTab] = useState('dashboard');
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showSellerAgent, setShowSellerAgent] = useState(false);
+  const [agentMessages, setAgentMessages] = useKV('agent-messages', []);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [isAgentTyping, setIsAgentTyping] = useState(false);
+  const [hasInitialGreeting, setHasInitialGreeting] = useKV('agent-initial-greeting', false);
 
   const enrollInCourse = (courseId) => {
     setCourses(currentCourses => 
@@ -210,6 +215,115 @@ function App() {
     }
   };
 
+  // Seller Agent Functions
+  const sendMessageToAgent = async (message) => {
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: message,
+      timestamp: new Date().toISOString()
+    };
+
+    setAgentMessages(currentMessages => [...currentMessages, userMessage]);
+    setCurrentMessage('');
+    setIsAgentTyping(true);
+
+    // Simulate agent processing time
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+
+    // Generate agent response based on user context
+    const unifiedProfile = getUnifiedProfile();
+    const userContext = {
+      enrolledCourses: enrolledCourses.length,
+      completedCourses: enrolledCourses.filter(c => c.progress === 100).length,
+      averageProgress: enrolledCourses.length > 0 ? enrolledCourses.reduce((sum, course) => sum + course.progress, 0) / enrolledCourses.length : 0,
+      connectedAccounts: Object.values(connectedAccounts).filter(Boolean).length,
+      skills: unifiedProfile?.skills || [],
+      availableCourses: courses.filter(c => !c.enrolled).length,
+      userName: unifiedProfile?.name || 'there'
+    };
+
+    const prompt = spark.llmPrompt`You are a helpful learning platform sales agent and advisor. Based on the user's message: "${message}" and their profile context: ${JSON.stringify(userContext)}, provide a personalized, helpful response that:
+
+1. Addresses their specific question or need directly
+2. Suggests specific courses from the available catalog when appropriate
+3. Provides actionable learning guidance and motivation
+4. Keeps responses concise and friendly (2-3 sentences max)
+5. Uses a warm, encouraging tone
+6. If they ask about course recommendations, be specific about which courses match their skill level
+
+Available courses: ${JSON.stringify(courses.map(c => ({ title: c.title, description: c.description, difficulty: c.difficulty, duration: c.duration, enrolled: c.enrolled })))}
+
+Focus on being helpful, personalized, and encouraging based on their current progress and connected skills.`;
+
+    try {
+      const agentResponse = await spark.llm(prompt);
+      
+      const agentMessage = {
+        id: Date.now() + 1,
+        type: 'agent',
+        content: agentResponse,
+        timestamp: new Date().toISOString()
+      };
+
+      setAgentMessages(currentMessages => [...currentMessages, agentMessage]);
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'agent',
+        content: "I'm having trouble connecting right now. Please try again in a moment, or browse our course catalog to find something that interests you!",
+        timestamp: new Date().toISOString()
+      };
+      setAgentMessages(currentMessages => [...currentMessages, errorMessage]);
+    }
+
+    setIsAgentTyping(false);
+  };
+
+  const clearAgentChat = () => {
+    setAgentMessages([]);
+    setHasInitialGreeting(false);
+  };
+
+  const initializeAgent = async () => {
+    if (hasInitialGreeting) return;
+    
+    setIsAgentTyping(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const unifiedProfile = getUnifiedProfile();
+    const userName = unifiedProfile?.name || 'there';
+    
+    const welcomeMessage = {
+      id: Date.now(),
+      type: 'agent',
+      content: `Hi ${userName}! 👋 I'm your Learning Assistant. I'm here to help you discover the perfect courses based on your skills and goals. How can I assist you today?`,
+      timestamp: new Date().toISOString()
+    };
+    
+    setAgentMessages(currentMessages => [...currentMessages, welcomeMessage]);
+    setHasInitialGreeting(true);
+    setIsAgentTyping(false);
+  };
+
+  const getRecommendedCourses = () => {
+    const unifiedProfile = getUnifiedProfile();
+    const userSkills = unifiedProfile?.skills || [];
+    
+    // Simple recommendation logic based on skills and progress
+    return courses.filter(course => {
+      if (course.enrolled) return false;
+      
+      // Recommend based on skill match
+      const hasRelatedSkills = userSkills.some(skill => 
+        course.title.toLowerCase().includes(skill.toLowerCase()) ||
+        course.description.toLowerCase().includes(skill.toLowerCase())
+      );
+      
+      return hasRelatedSkills;
+    }).slice(0, 3);
+  };
+
   const getUnifiedProfile = () => {
     const connectedPlatforms = Object.values(connectedAccounts).filter(Boolean);
     if (connectedPlatforms.length === 0) return null;
@@ -263,6 +377,15 @@ function App() {
               <h1 className="text-2xl font-bold text-foreground">Learning Platform</h1>
             </div>
             <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowSellerAgent(true)}
+                className="flex items-center space-x-1"
+              >
+                <ChatCircle className="h-4 w-4" />
+                <span>AI Assistant</span>
+              </Button>
               {unifiedProfile ? (
                 <div className="flex items-center space-x-3">
                   <img 
@@ -822,6 +945,184 @@ function App() {
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Floating AI Assistant Button */}
+      {!showSellerAgent && (
+        <Button
+          onClick={() => setShowSellerAgent(true)}
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-40 bg-primary hover:bg-primary/90"
+          size="sm"
+        >
+          <div className="relative">
+            <ChatCircle className="h-6 w-6" />
+            <div className="absolute -top-1 -right-1 h-3 w-3 bg-accent rounded-full animate-pulse"></div>
+          </div>
+        </Button>
+      )}
+
+      {/* Seller Agent Chat Modal */}
+      {showSellerAgent && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl h-[80vh] flex flex-col">
+            <CardHeader className="flex-shrink-0">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center space-x-2">
+                  <div className="bg-primary text-primary-foreground p-2 rounded-full">
+                    <Robot className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="flex items-center space-x-2">
+                      <span>Learning Assistant</span>
+                      <Sparkle className="h-4 w-4 text-accent" />
+                    </CardTitle>
+                    <CardDescription>
+                      Your personalized learning guide and course advisor
+                    </CardDescription>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={clearAgentChat}
+                    title="Clear chat"
+                  >
+                    Clear
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={() => setShowSellerAgent(false)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="flex-1 flex flex-col min-h-0">
+              {/* Chat Messages */}
+              <div className="flex-1 overflow-y-auto mb-4 space-y-4 min-h-0">
+                {agentMessages.length === 0 && !isAgentTyping ? (
+                  <div className="text-center py-8">
+                    <div className="bg-primary text-primary-foreground p-3 rounded-full w-fit mx-auto mb-4">
+                      <Robot className="h-8 w-8" />
+                    </div>
+                    <h3 className="font-medium mb-2">Meet your Learning Assistant</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      I can help you discover courses, track your progress, and provide personalized learning recommendations.
+                    </p>
+                    <Button 
+                      onClick={initializeAgent}
+                      className="mb-4"
+                    >
+                      Start Conversation
+                    </Button>
+                    <div className="grid gap-2 max-w-md mx-auto">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => sendMessageToAgent("What courses would you recommend for me?")}
+                        className="text-left justify-start"
+                      >
+                        "What courses would you recommend for me?"
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => sendMessageToAgent("How can I track my learning progress?")}
+                        className="text-left justify-start"
+                      >
+                        "How can I track my learning progress?"
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => sendMessageToAgent("What's the best way to get started?")}
+                        className="text-left justify-start"
+                      >
+                        "What's the best way to get started?"
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {agentMessages.map(message => (
+                      <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} chat-message`}>
+                        <div className={`max-w-[80%] rounded-lg p-3 ${
+                          message.type === 'user' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {message.type === 'agent' && (
+                            <div className="flex items-center space-x-2 mb-2">
+                              <Robot className="h-4 w-4" />
+                              <span className="text-xs font-medium">Learning Assistant</span>
+                            </div>
+                          )}
+                          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                          <div className="text-xs opacity-60 mt-1">
+                            {new Date(message.timestamp).toLocaleTimeString()}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    {isAgentTyping && (
+                      <div className="flex justify-start chat-message">
+                        <div className="bg-muted text-muted-foreground rounded-lg p-3 max-w-[80%] agent-typing">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <Robot className="h-4 w-4" />
+                            <span className="text-xs font-medium">Learning Assistant</span>
+                          </div>
+                          <div className="typing-indicator">
+                            <div className="typing-dot"></div>
+                            <div className="typing-dot"></div>
+                            <div className="typing-dot"></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+              
+              {/* Message Input */}
+              <div className="flex-shrink-0 border-t pt-4">
+                <div className="flex items-center space-x-2">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={currentMessage}
+                      onChange={(e) => setCurrentMessage(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey && currentMessage.trim()) {
+                          e.preventDefault();
+                          sendMessageToAgent(currentMessage.trim());
+                        }
+                      }}
+                      placeholder="Ask me about courses, progress, or learning recommendations..."
+                      className="w-full p-3 pr-12 border border-input rounded-lg focus:outline-none focus:ring-2 focus:ring-ring"
+                      disabled={isAgentTyping}
+                    />
+                    <Button
+                      size="sm"
+                      onClick={() => currentMessage.trim() && sendMessageToAgent(currentMessage.trim())}
+                      disabled={!currentMessage.trim() || isAgentTyping}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0"
+                    >
+                      <PaperPlaneRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+                  <span>Press Enter to send</span>
+                  <span>Powered by AI</span>
                 </div>
               </div>
             </CardContent>
